@@ -81,18 +81,34 @@ long_q2<-unnested_q2 %>%
       names_prefix = "week_") %>% 
   separate(file_names, into = c("arm", "subject"), sep = "_") %>% 
   mutate(subject=str_replace(subject, ".csv","")) %>% 
-  select(!path_names)
-    
+  select(!path_names) 
  
 ```
 
 Make a spaghetti plot showing observations on each subject over time
 
 ```{r p2 plot}
+q2_spaghetti<-
+  long_q2 %>% 
+  group_by(week) %>% 
+  ggplot(aes(x=as.numeric(week), y=as.numeric(observations),color=subject))+
+  geom_line()+ 
+  facet_grid(~arm)+
+  labs(
+    title = "Observations for each subject by week",
+    x = "Week",
+    y = "Observations",
+    color = "Subject")
 
+#changed the week and observations to numeric
+
+q2_spaghetti
 ```
 
 ### comment on differences between groups
+
+The control arm does not appear to change while there is a positive slope for the experimental arm. 
+
 
 
 
