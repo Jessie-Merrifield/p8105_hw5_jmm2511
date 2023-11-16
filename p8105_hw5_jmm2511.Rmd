@@ -1,7 +1,7 @@
 ---
 title: "p8105_hw5_jmm2511"
 author: "Jessie Merrifield"
-date: "2023-11-13"
+date: "2023-11-15"
 output: github_document
 ---
 
@@ -147,6 +147,9 @@ sim_mean_sd <- function(n=30, mu, sigma = 5) {
   
   return(data.frame(mu_hat = mu_hat$mu_hat, p_value = t_test_results$p.value))
 }
+
+#used return to output the values of interest
+#didn't input mu value to give more flexibility for mu input in future questions
 ```
 
 
@@ -184,6 +187,8 @@ sim_results_df_repeat =
   ) |> 
   unnest(estimate_df) |>
   select(mu_value, mu_hat, p_value)
+
+#used c(0,1,2,3,4,5,6) to avoid merging datasets to use for future questions
 ```
 
 
@@ -194,27 +199,44 @@ Make a plot showing the proportion of times the null was rejected (the power of 
 q3_power_plot<- sim_results_df_repeat %>%
   group_by(mu_value) %>% 
   summarise(power=sum(p_value<0.05)/5000)%>% 
-    ggplot(aes(x=mu_value, y=power, fill=mu_value))+
-    geom_col()+
+    ggplot(aes(x=mu_value, y=power))+
+    geom_point()+
+    geom_line()+
   labs(
-    title = "Proportion of times the null was rejected by value of mu",
-    x = "Mu value",
-    y = "Power",
-    fill = "Mu value")
+    title = "Power by true value of μ",
+    x = "True value of μ",
+    y = "Power")
 
 
 q3_power_plot
 
 ```
  
+ As the true value of μ increases, the power of the test increases. 
+
+
 
 Make a plot showing the average estimate of μ^
  on the y axis and the true value of μ
  on the x axis. 
  
 ```{r}
+q3_average_mu_plot<- sim_results_df_repeat %>%
+  group_by(mu_value) %>% 
+  summarise(average_mu_hat=mean(mu_hat))%>% 
+    ggplot(aes(x=mu_value, y=average_mu_hat))+
+    geom_point()+
+  geom_line()+
+  labs(
+    title = "Average estimate of μ^ by true value of μ",
+    x = "True value of μ",
+    y = "Average estimate of μ^")
 
+q3_average_mu_plot
 ```
+
+There is a strong positive linear relationship between the average estimate of μ^ and the true value of μ.
+
 
 
 Make a second plot (or overlay on the first) the average estimate of μ^
@@ -224,6 +246,20 @@ Make a second plot (or overlay on the first) the average estimate of μ^
 ? Why or why not?
 
 ```{r}
+q3_mu_null_rejected_plot<- sim_results_df_repeat %>%
+  filter(p_value<0.05) %>% 
+  group_by(mu_value) %>% 
+  summarise(average_mu_hat=mean(mu_hat))%>% 
+    ggplot(aes(x=mu_value, y=average_mu_hat))+
+    geom_point()+
+  geom_line()+
+  labs(
+    title = "Average estimate of μ^ by true value of μ for tests in which the null was rejected",
+    x = "True value of μ",
+    y = "Average estimate of μ^")
 
+
+q3_mu_null_rejected_plot
 ```
 
+For only samples in which the null was rejected, the sample average of μ^ is not approximately equal to the true value of μ. The difference in the sample average of μ^ and the true value of μ is especially apparent for the lower true values of μ--this is because the proportion of times the null was rejected is greater among lower true values of μ, which leads to a larger skew in the data for the sample average of μ^.
