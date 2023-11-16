@@ -31,6 +31,10 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
+```{r}
+set.seed(1)
+```
+
 
 # Problem 2
 
@@ -128,7 +132,7 @@ x∼Normal[μ,σ]
 
 
 ```{r}
-sim_mean_sd <- function(n, mu = 0, sigma = 5) {
+sim_mean_sd <- function(n=30, mu, sigma = 5) {
   
   sim_data <- tibble(
     x = rnorm(n, mean = mu, sd = sigma)
@@ -150,16 +154,15 @@ sim_mean_sd <- function(n, mu = 0, sigma = 5) {
 ```{r}
 sim_results_df = 
   expand_grid(
-    sample_size = 30,
+    mu_value = 0,
     iter = 1:5000
   ) |> 
   mutate(
-    estimate_df = map(sample_size, sim_mean_sd)
+    estimate_df = map(mu_value, ~sim_mean_sd(mu=.x))
   ) |> 
   unnest(estimate_df) |>
-  select(mu_hat, p_value)
+  select(mu_value, mu_hat, p_value)
 ```
-
 
 
 For each dataset, save μ^
@@ -170,11 +173,37 @@ For each dataset, save μ^
 Repeat the above for μ={1,2,3,4,5,6}
 , and complete the following:
 
+```{r}
+sim_results_df_repeat = 
+  expand_grid(
+    mu_value=c(0,1,2,3,4,5,6),
+    iter = 1:5000
+  ) |> 
+  mutate(
+    estimate_df = map(mu_value, ~sim_mean_sd(mu=.x))
+  ) |> 
+  unnest(estimate_df) |>
+  select(mu_value, mu_hat, p_value)
+```
+
+
 Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ
  on the x axis. Describe the association between effect size and power.
 
 ```{r}
+q3_power_plot<- sim_results_df_repeat %>%
+  group_by(mu_value) %>% 
+  summarise(power=sum(p_value<0.05)/5000)%>% 
+    ggplot(aes(x=mu_value, y=power, fill=mu_value))+
+    geom_col()+
+  labs(
+    title = "Proportion of times the null was rejected by value of mu",
+    x = "Mu value",
+    y = "Power",
+    fill = "Mu value")
 
+
+q3_power_plot
 
 ```
  
